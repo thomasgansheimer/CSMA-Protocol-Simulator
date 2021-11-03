@@ -17,3 +17,4 @@ In this network topology, the two wireless devices are in different collision do
 <img src =images/hidden_terminal.PNG height=200>
 
 ## Simulator Instructions
+The program prompts the user for a frame rate and simulation time. The program then returns the number of successes for each device in a hidden and non-hidden terminal topology. The program also outputs the number of collisions that occurred during the simulation for each topology.
