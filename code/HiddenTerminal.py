@@ -1,34 +1,12 @@
-# Implements the CSMA protocol for topology B
-import random
-from numpy import random as p
+# Implements the CSMA protocol for a Hidden Terminal Topology
 
-# Initialize transmission parameters
-difs, sifs, ack, frame, cw_min, cw_max, sim_time = 2, 1, 2, 100, 4, 1024, 10
-frame_rates = [100, 200, 300, 500, 700, 1000]
+from CSMA import sifs, difs, ack, frame, cw_max, cw_min, slots_per_second, get_backoff_value, get_frame_series
 
-'''Takes as a parameter a contention window and returns a random integer in that window'''
-def get_backoff_value(cw):
-    return random.randint(0, cw-1)
-
-'''Takes as a paramter a frame_rate and returns a list of intervals between frames. It is assumed
-that frames arrive according to a poisson distribution'''
-def get_frame_series(frame_rate):
-    # Number of expected frames = frame rate * simulation time
-    expected_frames = frame_rate * sim_time 
-    # Expected number of slots between frames = total slots / expected frames
-    slots_between = 1000000 // expected_frames
-
-    sum = 0
-    frame_series = []
-    for i in range(expected_frames):
-       sum += p.poisson(lam=slots_between)
-       frame_series.append(sum)
-    return frame_series
-
-# Execute transmission algorithm for each frame rate
-for frame_rate in frame_rates:
+'''Simulates the CSMA protocol on a hidden terminal topology, using the passed in frame rate
+and simulation time.'''
+def CSMA_hidden_terminal(frame_rate, sim_time):
     # Initialize lists of a_frames and c_frames arrivals
-    a_frames, c_frames = get_frame_series(frame_rate), get_frame_series(frame_rate)
+    a_frames, c_frames = get_frame_series(frame_rate, sim_time), get_frame_series(frame_rate, sim_time)
     # Performance metrics are intialized to zero
     a_success, c_success, a_bo, c_bo, a_buffer, c_buffer, collisions, a_time, c_time = 0, 0, 0, 0, 0, 0, 0, 0, 0
     cw_a, cw_c = cw_min, cw_min
@@ -39,7 +17,7 @@ for frame_rate in frame_rates:
     # transmitting. Therefore, A and C will have individual 'time' variables as each station acts 
     # independently of the other. The transmission will end when one of these stations reaches the end 
     # of the simulation time.
-    while a_time < 1000000 and c_time < 1000000:  
+    while a_time < (sim_time * slots_per_second) and c_time < (sim_time * slots_per_second):  
         # If a and c have no additional frames to send, end transmission
         if a_buffer == 0 and c_buffer == 0 and len(a_frames) == 0 and len(c_frames) == 0:
             break
@@ -136,5 +114,5 @@ for frame_rate in frame_rates:
                 c_buffer += 1
             else:
                 cont = False
-    # Print results of current Frame Rate:
-    print(f"\nFrame Rate: {frame_rate} \n\tA Successes: {a_success}, C Successes: {c_success}, Collisions: {collisions}")
+    # return results
+    return a_success, c_success, collisions

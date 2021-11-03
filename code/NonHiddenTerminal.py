@@ -1,40 +1,18 @@
-# Implements the CSMA protocol for topology A
-import random
-from numpy import random as p
+# Implements the CSMA protocol for a Non-hidden Terminal topology
 
-# Initialize values for transmission parameters
-difs, sifs, ack, frame, cw_min, cw_max, sim_time = 2, 1, 2, 100, 4, 1024, 10
-frame_rates = [100, 200, 300, 500, 700, 1000]
+from CSMA import sifs, difs, ack, frame, cw_max, cw_min, slots_per_second, get_backoff_value, get_frame_series
 
-'''Takes as a parameter a contention window and returns a random integer in that window'''
-def get_backoff_value(cw):
-    return random.randint(0, cw-1)
-
-'''Takes as a paramter a frame_rate and returns a list of intervals between frames. It is assumed
-that frames arrive according to a poisson distribution'''
-def get_frame_series(frame_rate):
-    # Number of expected frames = frame rate * simulation time
-    expected_frames = frame_rate * sim_time 
-    # Expected number of slots between frames = total slots / expected frames
-    slots_between = 1000000 // expected_frames
-
-    sum = 0
-    frame_series = []
-    for i in range(expected_frames):
-       sum += p.poisson(lam=slots_between)
-       frame_series.append(sum)
-    return frame_series
-
-# Iterate through each frame_rate in frame_rates and perform transmission algorithm
-for frame_rate in frame_rates:
-    a_frames, c_frames = get_frame_series(frame_rate), get_frame_series(frame_rate)
+'''Simulates the CSMA protocol on a non-hidden terminal topology, using the passed in frame rate
+and simulation time.'''
+def CSMA_non_hidden_terminal(frame_rate, sim_time):
+    a_frames, c_frames = get_frame_series(frame_rate, sim_time), get_frame_series(frame_rate, sim_time)
     # Performance metrics are initialized to zero 
     a_success, c_success, collisions, a_bo, c_bo, a_buffer, c_buffer, time = 0, 0, 0, 0, 0, 0, 0, 0
     # Contention window is set to its minimum value
     cw = cw_min
 
     # Transmission occurs while time has not exceeded total number of slots available
-    while time < 1000000:
+    while time < (sim_time * slots_per_second):
         # If no additional frames exist in buffers or frame lists, end transmission
         if a_buffer == 0 and c_buffer == 0 and len(a_frames) == 0 and len(c_frames) == 0:
             break
@@ -198,5 +176,5 @@ for frame_rate in frame_rates:
                 c_buffer += 1
             else:
                 cont = False
-    # Print results for Frame Rate
-    print(f"\nFrame Rate: {frame_rate} \n\tA Successes: {a_success}, C Successes: {c_success}, Collisions: {collisions}")
+    # return results
+    return a_success, c_success, collisions
