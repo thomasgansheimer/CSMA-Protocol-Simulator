@@ -13,7 +13,7 @@ def get_frame_rate():
         except ValueError:
             print("\tMust be an integer!")
 
-'''Requests and returnsa simulation time from the user'''
+'''Requests and returns a simulation time from the user.'''
 def get_sim_time():
     print()
     while True:
